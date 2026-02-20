@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}home — webapp.kyro.ninja{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .hero {
+        padding: 3rem 0 4rem;
+        animation: fadeUp 0.6s ease both;
+    }
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero .tag { margin-bottom: 1.5rem; }
+    .hero h1 {
+        font-size: clamp(2.4rem, 6vw, 4rem);
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 1rem;
+    }
+    .hero h1 em { font-style: normal; color: var(--accent); }
+    .hero p {
+        color: var(--muted);
+        max-width: 480px;
+        margin-bottom: 2.5rem;
+        font-size: 0.95rem;
+    }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.6rem 1.25rem;
+        border-radius: var(--radius);
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: all 0.15s;
+        border: 1px solid transparent;
+    }
+    .btn-primary { background: var(--accent); color: #0c0c0f; font-weight: 500; }
+    .btn-primary:hover { background: #5de888; }
+    .btn-ghost { border-color: var(--border); color: var(--muted); }
+    .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        animation: fadeUp 0.6s 0.15s ease both;
+    }
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem 1.5rem;
+        transition: border-color 0.15s;
+    }
+    .card:hover { border-color: var(--accent-dim); }
+    .card-icon { font-size: 1.25rem; margin-bottom: 0.75rem; }
+    .card h3 {
+        font-family: var(--font-head);
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 0.4rem;
+    }
+    .card p { color: var(--muted); font-size: 0.8rem; line-height: 1.6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <span class="tag">demo app</span>
+    <h1>Flask on a<br><em>real server</em></h1>
+    <p>A minimal Flask app deployed automatically to webapp.kyro.ninja via GitHub Actions, Nginx, and Gunicorn.</p>
+    <div class="btn-row">
+        <a href="/about" class="btn btn-primary">learn more →</a>
+        <a href="https://github.com" class="btn btn-ghost" target="_blank">view repo</a>
+    </div>
+</section>
+
+<hr class="divider">
+
+<div class="cards">
+    <div class="card">
+        <div class="card-icon">⚙️</div>
+        <h3>GitHub Actions</h3>
+        <p>Every push to main triggers a test run and automatic deploy over SSH.</p>
+    </div>
+    <div class="card">
+        <div class="card-icon">🔁</div>
+        <h3>Nginx + Gunicorn</h3>
+        <p>Nginx proxies requests to Gunicorn running Flask behind a Unix socket.</p>
+    </div>
+    <div class="card">
+        <div class="card-icon">🌐</div>
+        <h3>Cloudflare</h3>
+        <p>Traffic routed through Cloudflare for caching, DDoS protection, and SSL.</p>
+    </div>
+</div>
+{% endblock %}
