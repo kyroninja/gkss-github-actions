@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}about — webapp.kyro.ninja{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .about-header {
+        padding: 3rem 0 2.5rem;
+        animation: fadeUp 0.6s ease both;
+    }
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .about-header .tag { margin-bottom: 1.5rem; }
+    .about-header h1 {
+        font-size: clamp(2rem, 5vw, 3.2rem);
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 1rem;
+    }
+    .about-header p { color: var(--muted); max-width: 520px; }
+
+    /* Stack */
+    .stack {
+        animation: fadeUp 0.6s 0.1s ease both;
+    }
+    .stack h2 {
+        font-family: var(--font-head);
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 1rem;
+    }
+    .stack-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .stack-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.85rem 1.25rem;
+        transition: border-color 0.15s;
+    }
+    .stack-item:hover { border-color: var(--accent-dim); }
+    .stack-item-left { display: flex; align-items: center; gap: 0.85rem; }
+    .stack-item-icon { font-size: 1.1rem; width: 1.5rem; text-align: center; }
+    .stack-item-name {
+        font-family: var(--font-head);
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #fff;
+    }
+    .stack-item-desc { color: var(--muted); font-size: 0.78rem; }
+    .stack-item-role {
+        font-size: 0.72rem;
+        color: var(--accent);
+        background: var(--accent-dim);
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+    }
+
+    /* Flow diagram */
+    .flow {
+        margin-top: 2.5rem;
+        animation: fadeUp 0.6s 0.2s ease both;
+    }
+    .flow h2 {
+        font-family: var(--font-head);
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 1rem;
+    }
+    .flow-steps {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        flex-wrap: wrap;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+    }
+    .flow-step {
+        flex: 1;
+        min-width: 110px;
+        padding: 1rem 1.25rem;
+        border-right: 1px solid var(--border);
+        position: relative;
+    }
+    .flow-step:last-child { border-right: none; }
+    .flow-step-num {
+        font-size: 0.65rem;
+        color: var(--accent);
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+        letter-spacing: 0.1em;
+    }
+    .flow-step-label {
+        font-family: var(--font-head);
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .flow-step-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="about-header">
+    <span class="tag">about</span>
+    <h1>How this<br>app works</h1>
+    <p>A demo Flask application showing how to wire up a full deployment pipeline from GitHub to a live VPS.</p>
+</section>
+
+<hr class="divider">
+
+<section class="stack">
+    <h2>Tech Stack</h2>
+    <div class="stack-list">
+        <div class="stack-item">
+            <div class="stack-item-left">
+                <span class="stack-item-icon">🐍</span>
+                <div>
+                    <div class="stack-item-name">Flask</div>
+                    <div class="stack-item-desc">Lightweight Python web framework</div>
+                </div>
+            </div>
+            <span class="stack-item-role">app</span>
+        </div>
+        <div class="stack-item">
+            <div class="stack-item-left">
+                <span class="stack-item-icon">🦄</span>
+                <div>
+                    <div class="stack-item-name">Gunicorn</div>
+                    <div class="stack-item-desc">WSGI server — runs Flask in production</div>
+                </div>
+            </div>
+            <span class="stack-item-role">server</span>
+        </div>
+        <div class="stack-item">
+            <div class="stack-item-left">
+                <span class="stack-item-icon">🔀</span>
+                <div>
+                    <div class="stack-item-name">Nginx</div>
+                    <div class="stack-item-desc">Reverse proxy in front of Gunicorn</div>
+                </div>
+            </div>
+            <span class="stack-item-role">proxy</span>
+        </div>
+        <div class="stack-item">
+            <div class="stack-item-left">
+                <span class="stack-item-icon">🌐</span>
+                <div>
+                    <div class="stack-item-name">Cloudflare</div>
+                    <div class="stack-item-desc">DNS, SSL, and DDoS protection</div>
+                </div>
+            </div>
+            <span class="stack-item-role">cdn / dns</span>
+        </div>
+        <div class="stack-item">
+            <div class="stack-item-left">
+                <span class="stack-item-icon">⚙️</span>
+                <div>
+                    <div class="stack-item-name">GitHub Actions</div>
+                    <div class="stack-item-desc">CI/CD — tests then deploys on push</div>
+                </div>
+            </div>
+            <span class="stack-item-role">ci/cd</span>
+        </div>
+    </div>
+</section>
+
+<section class="flow">
+    <h2>Deploy Flow</h2>
+    <div class="flow-steps">
+        <div class="flow-step">
+            <div class="flow-step-num">01</div>
+            <div class="flow-step-label">git push</div>
+            <div class="flow-step-sub">to main</div>
+        </div>
+        <div class="flow-step">
+            <div class="flow-step-num">02</div>
+            <div class="flow-step-label">pytest</div>
+            <div class="flow-step-sub">tests run</div>
+        </div>
+        <div class="flow-step">
+            <div class="flow-step-num">03</div>
+            <div class="flow-step-label">SSH deploy</div>
+            <div class="flow-step-sub">git pull + restart</div>
+        </div>
+        <div class="flow-step">
+            <div class="flow-step-num">04</div>
+            <div class="flow-step-label">Nginx</div>
+            <div class="flow-step-sub">routes traffic</div>
+        </div>
+        <div class="flow-step">
+            <div class="flow-step-num">05</div>
+            <div class="flow-step-label">Live 🎉</div>
+            <div class="flow-step-sub">webapp.kyro.ninja</div>
+        </div>
+    </div>
+</section>
+{% endblock %}
