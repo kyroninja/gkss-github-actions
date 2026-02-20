@@ -66,10 +66,10 @@ jobs:
       # actions/setup-python installs the specified Python version on the runner.
       # This keeps your CI environment consistent regardless of what GitHub
       # has installed by default.
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
           # Cache pip packages so repeated runs are faster.
           # GitHub will restore the cache if requirements.txt hasn't changed.
