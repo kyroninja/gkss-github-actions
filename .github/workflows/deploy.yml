@@ -137,23 +137,26 @@ jobs:
           # `script` is the shell commands that run ON YOUR SERVER over SSH.
           # Adjust the paths to match where your app lives on the server.
           script: |
-            # Navigate to the project directory on the server
-            cd /var/www/my-flask-site
-
-            # Pull the latest code from the main branch
+            echo "Pulling latest code..."
+            cd /var/www/gkss-github-actions
             git pull origin main
 
-            # Activate the Python virtual environment on the server
+            echo "Installing/updating Python dependencies..."
             source venv/bin/activate
+            pip install -r requirements.txt --quiet
 
-            # Install/update dependencies in case requirements.txt changed
-            pip install -r requirements.txt
+            echo "Restarting Gunicorn..."
+            # systemctl requires passwordless sudo for this specific command.
+            # On the server, add to sudoers:
+            #   deploy ALL=(ALL) NOPASSWD: /bin/systemctl restart gkss-github-actions
+            sudo systemctl restart gkss-github-actions
 
-            # Restart the app using systemd (assumes gunicorn runs as a service)
-            # The service name `flask-site` should match your systemd unit file
-            sudo systemctl restart flask-site
+            echo "Checking service is running..."
+            sudo systemctl is-active --quiet gkss-github-actions \
+              && echo "Service is up" \
+              || (echo "Service failed to start" && sudo journalctl -u gkss-github-actions -n 20 && exit 1)
 
-            echo "Deployment complete!"
+            echo "Deployed successfully to webapp.kyro.ninja"
 
 
 # ============================================================
