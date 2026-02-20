@@ -29,7 +29,7 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - main          # Only run when code is pushed to `main`
+      - master        # Only run when code is pushed to `main`
                       # Change to `master` or `production` to match your branch name
 
   # Optional: also allow triggering manually from the GitHub UI
@@ -66,10 +66,10 @@ jobs:
       # actions/setup-python installs the specified Python version on the runner.
       # This keeps your CI environment consistent regardless of what GitHub
       # has installed by default.
-      - name: Set up Python 3.12
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
 
           # Cache pip packages so repeated runs are faster.
           # GitHub will restore the cache if requirements.txt hasn't changed.
@@ -104,7 +104,7 @@ jobs:
 
     # Only deploy when pushing to main (not on PRs or other branches).
     # This is a safety guard — you don't want every branch to deploy.
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
 
     steps:
 
