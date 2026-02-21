@@ -139,7 +139,7 @@ jobs:
           script: |
             echo "Pulling latest code..."
             cd /var/www/gkss-github-actions
-            git pull origin maaster
+            git pull origin master
 
             echo "Installing/updating Python dependencies..."
             source venv/bin/activate
