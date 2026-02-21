@@ -1,131 +1,47 @@
 # ============================================================
 # .github/workflows/deploy.yml
-#
-# GitHub Actions Workflow: Build & Deploy Flask Site via SSH
-# ============================================================
-#
-# WHAT IS A GITHUB ACTION?
-# A GitHub Action is an automated workflow that runs on GitHub's
-# servers in response to events (like pushing code). Each workflow
-# is defined in a YAML file inside .github/workflows/.
-#
-# HOW IT WORKS (high level):
-#   1. You push code to the `main` branch
-#   2. GitHub detects the push and spins up a fresh virtual machine
-#   3. The machine runs all the steps defined below — in order
-#   4. Your code gets tested, then copied to your live server via SSH
 # ============================================================
 
-
-# --- WORKFLOW NAME -------------------------------------------
-# This name appears in the GitHub UI under the "Actions" tab.
 name: Build and Deploy
 
-
-# --- TRIGGERS (on:) ------------------------------------------
-# Defines WHEN this workflow should run.
-# You can trigger on many events: push, pull_request, schedule,
-# workflow_dispatch (manual), etc.
 on:
   push:
     branches:
-      - master        # Only run when code is pushed to `main`
-                      # Change to `master` or `production` to match your branch name
-
-  # Optional: also allow triggering manually from the GitHub UI
+      - master
   workflow_dispatch:
 
-
-# --- JOBS ----------------------------------------------------
-# A workflow is made up of one or more "jobs".
-# Jobs run IN PARALLEL by default. Use `needs:` to chain them.
-# Each job runs on its own fresh virtual machine.
 jobs:
 
-  # ---- JOB 1: build_and_test --------------------------------
-  # This job installs dependencies and runs our test suite.
-  # If tests fail, the deploy job will NOT run.
   build_and_test:
-
-    # `runs-on` sets the OS of the virtual machine GitHub provides.
-    # Common options: ubuntu-latest, windows-latest, macos-latest
     runs-on: ubuntu-latest
-
-    # `steps` are the individual commands that run inside this job.
-    # They execute sequentially — if one fails, the rest are skipped.
     steps:
-
-      # STEP 1: Check out the code
-      # `uses` lets you reference a pre-built Action from the Marketplace.
-      # actions/checkout@v4 clones YOUR repository onto the runner machine.
-      # Without this, the runner has no access to your code.
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # STEP 2: Set up Python
-      # actions/setup-python installs the specified Python version on the runner.
-      # This keeps your CI environment consistent regardless of what GitHub
-      # has installed by default.
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-          # Cache pip packages so repeated runs are faster.
-          # GitHub will restore the cache if requirements.txt hasn't changed.
           cache: "pip"
 
-      # STEP 3: Install dependencies
-      # `run` executes shell commands directly on the runner.
-      # We upgrade pip first (best practice), then install from requirements.txt.
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest   # Install test runner (not in requirements.txt)
+          pip install pytest
 
-      # STEP 4: Run tests
-      # pytest will find and run all files matching test_*.py or *_test.py.
-      # If any test fails, this step fails — and the deploy job below is blocked.
       - name: Run tests
         run: pytest test_app.py --verbose
 
-
-  # ---- JOB 2: deploy ----------------------------------------
-  # This job copies the app to your server and restarts it.
-  # It only runs AFTER build_and_test completes successfully.
   deploy:
-
     runs-on: ubuntu-latest
-
-    # `needs` creates a dependency chain between jobs.
-    # This job will not start until `build_and_test` passes.
     needs: build_and_test
-
-    # Only deploy when pushing to main (not on PRs or other branches).
-    # This is a safety guard — you don't want every branch to deploy.
     if: github.ref == 'refs/heads/master'
 
     steps:
-
-      # STEP 1: Check out the code again (each job gets a fresh machine)
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # STEP 2: Deploy to server via SSH
-      # We use the popular `appleboy/ssh-action` from the Marketplace.
-      # It handles establishing the SSH connection and running commands remotely.
-      #
-      # SECRETS: Notice the `${{ secrets.* }}` syntax.
-      # NEVER hardcode passwords or keys in this file — it's public!
-      # Instead, store sensitive values in:
-      #   GitHub Repo → Settings → Secrets and variables → Actions
-      #
-      # Required secrets to configure:
-      #   SSH_HOST     → Your server's IP address or domain (e.g. 123.45.67.89)
-      #   SSH_USERNAME → The SSH user on your server (e.g. ubuntu, deploy)
-      #   SSH_KEY      → Your private SSH key (the full contents of id_rsa)
-      #   SSH_PORT     → SSH port, usually 22
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -133,51 +49,24 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-
-          # `script` is the shell commands that run ON YOUR SERVER over SSH.
-          # Adjust the paths to match where your app lives on the server.
           script: |
-            echo "Pulling latest code..."
-            cd /var/www/gkss-github-actions
-            git pull origin master
+            set -e
 
-            echo "Installing/updating Python dependencies..."
+            echo "▶ Pulling latest code..."
+            cd /var/www/gkss-github-actions
+            git fetch origin master
+            git reset --hard origin/master
+
+            echo "▶ Installing/updating Python dependencies..."
             source venv/bin/activate
             pip install -r requirements.txt --quiet
 
-            echo "Restarting Gunicorn..."
-            # systemctl requires passwordless sudo for this specific command.
-            # On the server, add to sudoers:
-            #   deploy ALL=(ALL) NOPASSWD: /bin/systemctl restart gkss-github-actions
+            echo "▶ Restarting Gunicorn..."
             sudo systemctl restart gkss-github-actions
 
-            echo "Checking service is running..."
+            echo "▶ Checking service is running..."
             sudo systemctl is-active --quiet gkss-github-actions \
-              && echo "Service is up" \
-              || (echo "Service failed to start" && sudo journalctl -u gkss-github-actions -n 20 && exit 1)
+              && echo "✅ Service is up" \
+              || (echo "❌ Service failed to start" && sudo journalctl -u gkss-github-actions -n 20 && exit 1)
 
-            echo "Deployed successfully to webapp.kyro.ninja"
-
-
-# ============================================================
-# SECRETS CHEAT SHEET
-# ============================================================
-# Go to: GitHub Repo → Settings → Secrets and variables → Actions → New repository secret
-#
-#  Name            | Example Value
-#  ----------------+-------------------------------------
-#  SSH_HOST        | 123.45.67.89
-#  SSH_USERNAME    | ubuntu
-#  SSH_KEY         | (paste full contents of ~/.ssh/id_rsa)
-#  SSH_PORT        | 22
-#
-# ============================================================
-# SERVER SETUP ASSUMPTIONS
-# ============================================================
-# This workflow assumes your server already has:
-#   - Python + virtualenv at /var/www/my-flask-site/venv/
-#   - The repo cloned at /var/www/my-flask-site/
-#   - Gunicorn running as a systemd service named `flask-site`
-#   - The deploy user can run `sudo systemctl restart flask-site` without a password
-#     (add to /etc/sudoers: deploy ALL=(ALL) NOPASSWD: /bin/systemctl restart flask-site)
-# ============================================================
+            echo "🚀 Deployed successfully!"
