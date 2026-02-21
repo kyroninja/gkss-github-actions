@@ -52,21 +52,21 @@ jobs:
           script: |
             set -e
 
-            echo "▶ Pulling latest code..."
+            echo "Pulling latest code..."
             cd /var/www/gkss-github-actions
             git fetch origin master
             git reset --hard origin/master
 
-            echo "▶ Installing/updating Python dependencies..."
+            echo "Installing/updating Python dependencies..."
             source venv/bin/activate
             pip install -r requirements.txt --quiet
 
-            echo "▶ Restarting Gunicorn..."
+            echo "Restarting Gunicorn..."
             sudo systemctl restart gkss-github-actions
 
-            echo "▶ Checking service is running..."
+            echo "Checking service is running..."
             sudo systemctl is-active --quiet gkss-github-actions \
-              && echo "✅ Service is up" \
-              || (echo "❌ Service failed to start" && sudo journalctl -u gkss-github-actions -n 20 && exit 1)
+              && echo "Service is up" \
+              || (echo "Service failed to start" && sudo journalctl -u gkss-github-actions -n 20 && exit 1)
 
-            echo "🚀 Deployed successfully!"
+            echo "Deployed successfully!"
